@@ -1,0 +1,16 @@
+<h1>请刷新界面以确保获取最新服务器ip</h1>
+<h1>游戏版本: 1.20.6</h1>
+<h1><a href='#' id='ip'>42.236.129.146:6256</a></h1>
+<script>
+document.getElementById('ip').onclick = function(event) {
+    event.preventDefault();
+
+    var aux = document.createElement("input"); 
+    aux.setAttribute("value", document.getElementById('ip').textContent); 
+    document.body.appendChild(aux); 
+    aux.select();
+    document.execCommand("copy"); 
+    document.body.removeChild(aux);
+    alert("复制成功");
+};
+</script>
