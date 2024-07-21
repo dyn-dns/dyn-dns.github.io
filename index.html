@@ -1,1 +1,11 @@
-<script>window.location.replace("http://42.236.129.146:6614")</script>
+<script>
+fetch('config.json')
+.then(response => {
+    return response.json();
+})
+.then(data => {
+    window.location.replace(data.index);
+}).catch(error => {
+    alert(error);
+});
+</script>
