@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 
-import base64,requests
+import base64,requests,json
+
+config = {
+    "index":"https://github.com",
+    "minecraft_ip":"github.com",
+    "minecraft_version":"1.20.6"
+}
 
 token = ''
 def getSHA():
-    response = requests.get('https://api.github.com/repos/dyn-dns/dyn-dns.github.io/contents/index.html')
+    response = requests.get('https://api.github.com/repos/dyn-dns/dyn-dns.github.io/contents/config.json')
     response.raise_for_status()
-    data = response.json()
-    return data['sha']
+    return response.json()['sha']
 
-def updateIP(ip:str):
+def updateIP():
     headers = {
         'Authorization':'Bearer ' + token,
         'X-GitHub-Api-Version':'2022-11-28'
@@ -17,21 +22,25 @@ def updateIP(ip:str):
 
     data = {
         'message':'upd',
-        'content':base64.b64encode(('<script>window.location.replace("http://%s")</script>' % ip).encode('utf-8')).decode('utf-8'),
+        'content':base64.b64encode(json.dumps(config).encode('utf-8')).decode('utf-8'),
         'sha':getSHA()
     }
 
-    response = requests.put('https://api.github.com/repos/dyn-dns/dyn-dns.github.io/contents/index.html',headers=headers, json=data)
+    response = requests.put('https://api.github.com/repos/dyn-dns/dyn-dns.github.io/contents/config.json', headers=headers, json=data)
     response.raise_for_status()
 
-old = ''
-def newIP(ip:str):
-    global old
-    if(old != ip):
-        print('update dyn-dns to ' + ip)
-        updateIP(ip)
-        old = ip
-        print('update finished')
+def newIP(ip:str, mode:str, mcv:str):
+    print('update dyn-dns to ' + ip)
+
+    if mode == 'index':
+        config['index'] = ip
+    elif mode == 'mc':
+        config['minecraft_version'] = mcv
+        config['minecraft_ip'] = ip
+
+    updateIP()
+
+    print('update finished')
 
 
 '''
@@ -1583,6 +1592,18 @@ def natter_main(show_title = True):
         "-r", action="store_true", help="keep retrying until the port of forward target is open"
     )
 
+
+    group = argp.add_argument_group("dyn-dns options")
+    group.add_argument(
+        "-mode", type=str, metavar="<mode>", default="index",
+        help="mode (index, mc)"
+    )
+    group.add_argument(
+        "-mcv", type=str, metavar="<version>", default="1.20.6",
+        help="minecraft version"
+    )
+
+
     args = argp.parse_args()
     verbose = args.v
     udp_mode = args.u
@@ -1825,7 +1846,10 @@ def natter_main(show_title = True):
             forwarder.stop_forward()
             raise NatterRetryException("Target port is closed")
         
-    newIP(outer_addr[0]+':'+str(outer_addr[1]))
+
+    newIP(outer_addr[0]+':'+str(outer_addr[1]), args.mode, args.mcv)
+
+
     #
     #  Main loop
     #

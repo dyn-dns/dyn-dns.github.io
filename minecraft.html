@@ -1,14 +1,14 @@
-<h1>请刷新界面以确保获取最新服务器ip</h1>
-<h1>游戏版本: 1.20.6</h1>
+<h1>请按 Ctrl+Shift+R 或 Ctrl+F5 硬刷新界面以确保获取最新服务器ip</h1>
+<h1 id='version'></h1>
 <h1><a href='#' id='ip'></a></h1>
 <script>
-
 fetch('config.json')
 .then(response => {
     return response.json();
 })
 .then(data => {
-	document.getElementById('ip').innerText = data.minecraft
+	document.getElementById('ip').innerText = data.minecraft_ip
+	document.getElementById('version').innerText = "游戏版本: " + data.minecraft_version
 }).catch(error => {
     alert(error);
 });
